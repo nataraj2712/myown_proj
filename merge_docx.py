@@ -33,14 +33,19 @@ def extract(myFile):
         fileCont = fo.read()
 
     fileCont=re.sub(r'(<w:del [^>]+>)<w:r( [^>]+>((?:(?!</w:r>).)*)</w:r>)','\g<1><w:changed_r\g<2>',fileCont,re.DOTALL)
+    fileCont=re.sub(r'<w:t xml:space="preserve">','<w:tmerge_t_tag_space>',fileCont)
+    fileCont = re.sub(r'<w:tmerge_t_tag_space> </w:t>', '<w:tmerge_t_tag_space>merge_t_space</w:t>', fileCont)
 
-    for mt in re.finditer('<w:t(?: [^>]+)?>((?:(?!</w:t>).)*)</w:t>',fileCont):
+    # with open("D:\\147852.txt","w") as fo:
+    #     fo.write(fileCont)
+
+    for mt in re.finditer('<w:t(?:merge_t_tag_space)?>((?:(?!</w:t>).)*)</w:t>',fileCont):
         fullLine=mt.group()
         bk_fullLine = fullLine
         grpStr = mt.group(1)
 
-        if grpStr == " ":
-            continue
+        # if grpStr == " ":
+        #     continue
         if not re.search('\s',grpStr):
             continue
 
@@ -50,11 +55,18 @@ def extract(myFile):
         fileCont=fileCont.replace(bk_fullLine,fullLine)
 
 
+    # with open("D:\\147852.txt","w") as fo:
+    #     fo.write(fileCont)
+
+
 
     for mt in re.finditer('<w:pPr><w:pStyle w:val="[^"]+"/>((?:(?!</w:pPr>).)*)</w:pPr><w:r[^>]*>((?:(?!<w:t[^>]*>).)*)<w:t[^>]*>', fileCont):
         mt1 = re.search('(<w:([^>]+) w:val="(?:0|baseline|none)"/>)', str(mt.group(1)))
         if mt1 and str(mt1.group(2)).upper() != "WIDOWCONTROL":
             fileCont = re.sub(str(mt.group()), str(mt.group()) + "mergedocx_start"+(str(mt1.group()).replace("<",'&lt;')).replace('>',"&gt;")+"mergedocx_end", fileCont)
+
+    # with open("D:\\147852.txt","w") as fo:
+    #     fo.write(fileCont)
 
 
     for mt in re.finditer('(<w:rPr><w:rStyle w:val="[^"]+"/>)((?:(?!</w:rPr>).)*)(</w:rPr><w:t[^>]*>)',fileCont):
@@ -62,7 +74,12 @@ def extract(myFile):
             if mt1 and str(mt1.group(1)).upper() != "WIDOWCONTROL":
                 fileCont=re.sub(str(mt.group()),str(mt.group(1))+str(mt.group(3))+"mergedocx_start"+(str(mt1.group()).replace("<",'&lt;')).replace('>',"&gt;")+"mergedocx_end",fileCont,count=1,flags=re.DOTALL)
 
+    # with open("D:\\147852.txt","w") as fo:
+    #     fo.write(fileCont)
+
     fileCont=re.sub(r'(<[^>]+)mergespace([^>]*>)','\g<1> \g<2>',fileCont)
+    fileCont = re.sub(r'<w:tmerge_t_tag_space>merge_t_space</w:t>','<w:t xml:space="preserve"> </w:t>', fileCont)
+    fileCont = re.sub(r'<w:tmerge_t_tag_space>','<w:t xml:space="preserve">', fileCont)
     fileCont=re.sub(r'<w:changed_r([^>]+)>','<w:r\g<1>>',fileCont)
     fo = open(xmlFile,"w")
     fo.write(fileCont)
