@@ -91,5 +91,5 @@ def opc_to_flat_opc(src_docx_path, dst_opc_path):
 
 
 inFile = sys.argv[1]
-outFile = re.sub('.docx\Z','.xml',inFile)
+outFile = re.sub('.docx\Z','.xml',inFile,flags=re.I)
 opc_to_flat_opc(inFile,outFile)
